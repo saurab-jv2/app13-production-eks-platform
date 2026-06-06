@@ -10,5 +10,12 @@ deploy-ingress:
 install-cert-manager:
 	./scripts/install-cert-manager.sh
 
+apply-clusterissuer-letsencrypt:
+	kubectl apply -f kubernetes/tls/clusterissuer-letsencrypt.yaml
+
+# Self Signed Certificate 
+#apply-clusterissuer-selfsigned:
+#	kubectl apply -f kubernetes/tls/clusterissuer-selfsigned.yaml
+
 get-all:
 	kubectl get all -A
