@@ -1,0 +1,27 @@
+namespace: dev
+
+replicaCount: 2
+
+image:
+  repository: nginx
+  tag: stable
+
+containerPort: 80
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
+
+service:
+  port: 80
+  targetPort: 80
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  host: nginx.local
+  path: /

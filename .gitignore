@@ -17,3 +17,8 @@ kubeconfig
 
 # Logs
 *.log
+
+kubernetes/secrets/*.yaml
+!kubernetes/secrets/*yaml.example
+
+aaa/*
