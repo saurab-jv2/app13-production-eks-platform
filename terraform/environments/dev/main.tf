@@ -59,3 +59,14 @@ module "eks" {
     module.iam
   ]
 }
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  name                 = var.ecr_repo_name
+  image_tag_mutability = var.image_tag_mutability
+
+  name_prefix = var.name_prefix
+
+  common_tags = var.common_tags
+}

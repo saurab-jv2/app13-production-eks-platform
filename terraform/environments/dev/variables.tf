@@ -49,3 +49,13 @@ variable "max_size" {
 variable "common_tags" {
   type = map(string)
 }
+
+variable "ecr_repo_name" {
+  description = "ECR repository name"
+  type        = string
+}
+
+variable "image_tag_mutability" {
+  description = "ECR image tag mutability"
+  type        = string
+}
