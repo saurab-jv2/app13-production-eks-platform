@@ -10,6 +10,11 @@ variable "private_subnet_ids" {
   type = list(string)
 }
 
+# for dev environment only
+variable "public_subnet_ids" {
+  type = list(string)
+}
+
 variable "eks_cluster_role_arn" {
   type = string
 }

@@ -15,5 +15,5 @@ output "internet_gateway_id" {
 }
 
 output "nat_gateway_id" {
-  value = aws_nat_gateway.nat.id
+  value = var.enable_nat_gateway ? aws_nat_gateway.nat[0].id : null
 }

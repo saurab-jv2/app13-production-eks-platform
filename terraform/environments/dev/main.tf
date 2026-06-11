@@ -9,6 +9,8 @@ module "vpc" {
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
 
+  enable_nat_gateway = var.enable_nat_gateway
+
   common_tags = var.common_tags
 }
 
@@ -36,6 +38,11 @@ module "eks" {
   eks_cluster_version = var.eks_cluster_version
 
   private_subnet_ids = module.vpc.private_subnet_ids
+
+  # Worker nodes are deployed in public subnets in the development environment
+  # to eliminate NAT Gateway costs.
+  # change it in EKS for optimum security
+  public_subnet_ids  = module.vpc.public_subnet_ids 
 
   eks_cluster_role_arn = module.iam.eks_cluster_role_arn
   eks_node_role_arn    = module.iam.eks_node_role_arn

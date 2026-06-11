@@ -59,3 +59,8 @@ variable "image_tag_mutability" {
   description = "ECR image tag mutability"
   type        = string
 }
+
+variable "enable_nat_gateway" {
+  type    = bool
+  default = true
+}
