@@ -23,5 +23,13 @@ service:
 
 ingress:
   enabled: true
-  host: nginx.local
+
+  host: app13.example.com
+
   path: /
+
+  tls:
+    enabled: true
+    secretName: nginx-tls
+
+  clusterIssuer: letsencrypt-prod
