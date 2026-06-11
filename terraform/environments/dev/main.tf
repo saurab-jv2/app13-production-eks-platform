@@ -77,3 +77,14 @@ module "ecr" {
 
   common_tags = var.common_tags
 }
+
+module "github_oidc" {
+  source = "../../modules/github-oidc"
+
+  github_org  = "saurab-jv2"
+  github_repo = "app13-production-eks-platform"
+
+  role_name = "github-actions-app13"
+
+  common_tags = var.common_tags
+}
