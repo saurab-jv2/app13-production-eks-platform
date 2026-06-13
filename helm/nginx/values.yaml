@@ -3,8 +3,8 @@ namespace: dev
 replicaCount: 2
 
 image:
-  repository: nginx
-  tag: stable
+  repository: ""
+  tag: ""
 
 containerPort: 80
 
@@ -24,12 +24,18 @@ service:
 ingress:
   enabled: true
 
-  host: app13.example.com
+  host: ""
 
   path: /
 
   tls:
-    enabled: true
+    enabled: false
     secretName: nginx-tls
 
   clusterIssuer: letsencrypt-prod
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
