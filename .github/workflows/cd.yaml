@@ -17,11 +17,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug variables
+        run: |
+          echo "Region: ${{ vars.AWS_REGION }}"
+          echo "Role length: $(echo '${{ secrets.AWS_ROLE_ARN }}' | wc -c)"
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Login to ECR
         id: login-ecr
