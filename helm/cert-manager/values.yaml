@@ -1,6 +1,6 @@
 installCRDs: true
 
-replicaCount: 2
+replicaCount: 1
 
 resources:
   requests:
@@ -16,10 +16,10 @@ prometheus:
     enabled: true
 
 webhook:
-  replicaCount: 2
+  replicaCount: 1
 
 cainjector:
-  replicaCount: 2
+  replicaCount: 1
 
 startupapicheck:
   enabled: true
