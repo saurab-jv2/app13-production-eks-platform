@@ -1,0 +1,70 @@
+name: Platform Deployment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-platform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ vars.AWS_REGION }} \
+            --name ${{ vars.EKS_CLUSTER_NAME }}
+
+      - name: Install Ingress NGINX
+        run: |
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+
+          helm upgrade --install ingress-nginx \
+            ingress-nginx/ingress-nginx \
+            --namespace ingress-nginx \
+            --create-namespace \
+            -f helm/ingress-nginx/values.yaml
+
+      - name: Install Cert Manager
+        run: |
+          helm repo add jetstack https://charts.jetstack.io
+
+          helm upgrade --install cert-manager \
+            jetstack/cert-manager \
+            --namespace cert-manager \
+            --create-namespace \
+            -f helm/cert-manager/values.yaml
+
+      - name: Create Grafana Secret
+        run: |
+          kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic grafana-admin-secret \
+            --namespace monitoring \
+            --from-literal=admin-user=admin \
+            --from-literal=admin-password="${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Install Monitoring
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+          helm repo update
+
+          helm upgrade --install prometheus \
+            prometheus-community/kube-prometheus-stack \
+            --namespace monitoring \
+            --create-namespace \
+            -f helm/prometheus/values.yaml
