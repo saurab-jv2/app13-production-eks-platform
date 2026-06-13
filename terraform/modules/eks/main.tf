@@ -4,13 +4,17 @@ resource "aws_eks_cluster" "main" {
 
   version = var.eks_cluster_version
 
+  access_config {
+    authentication_mode                         = "API_AND_CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
+  }
+
   vpc_config {
     # Worker nodes are deployed in public subnets in the development environment
     # to eliminate NAT Gateway costs.
     # Disable Public subnet for optimum security
     subnet_ids = var.public_subnet_ids 
     #subnet_ids = var.private_subnet_ids 
-
 
     security_group_ids = [
       var.eks_cluster_security_group_id

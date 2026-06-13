@@ -42,12 +42,14 @@ module "eks" {
   # Worker nodes are deployed in public subnets in the development environment
   # to eliminate NAT Gateway costs.
   # change it in EKS for optimum security
-  public_subnet_ids  = module.vpc.public_subnet_ids 
+  public_subnet_ids = module.vpc.public_subnet_ids
 
   eks_cluster_role_arn = module.iam.eks_cluster_role_arn
   eks_node_role_arn    = module.iam.eks_node_role_arn
 
   eks_cluster_security_group_id = module.security.eks_cluster_security_group_id
+
+  github_actions_role_arn = module.github_oidc.github_actions_role_arn
 
   node_instance_types = var.node_instance_types
   capacity_type       = var.capacity_type

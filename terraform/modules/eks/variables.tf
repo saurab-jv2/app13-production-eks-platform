@@ -58,3 +58,8 @@ variable "eks_cluster_policy_dependency" {
 variable "eks_node_policy_dependency" {
   type = any
 }
+
+variable "github_actions_role_arn" {
+  description = "GitHub Actions OIDC role ARN"
+  type        = string
+}
