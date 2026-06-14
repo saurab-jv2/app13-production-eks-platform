@@ -21,4 +21,11 @@ kubeconfig
 kubernetes/secrets/*.yaml
 !kubernetes/secrets/*yaml.example
 
-aaa/*
+# Terraform plans
+*.tfplan
+
+# Local environment
+.env
+
+# Python cache
+__pycache__/

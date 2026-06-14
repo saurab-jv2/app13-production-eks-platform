@@ -14,7 +14,7 @@ resource "aws_eks_cluster" "main" {
     # to eliminate NAT Gateway costs.
     # Disable Public subnet for optimum security
     # subnet_ids = var.public_subnet_ids 
-    subnet_ids = var.private_subnet_ids 
+    subnet_ids = var.private_subnet_ids
 
     security_group_ids = [
       var.eks_cluster_security_group_id
