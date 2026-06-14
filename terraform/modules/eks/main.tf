@@ -13,8 +13,8 @@ resource "aws_eks_cluster" "main" {
     # Worker nodes are deployed in public subnets in the development environment
     # to eliminate NAT Gateway costs.
     # Disable Public subnet for optimum security
-    subnet_ids = var.public_subnet_ids 
-    #subnet_ids = var.private_subnet_ids 
+    # subnet_ids = var.public_subnet_ids 
+    subnet_ids = var.private_subnet_ids 
 
     security_group_ids = [
       var.eks_cluster_security_group_id
@@ -42,8 +42,8 @@ resource "aws_eks_node_group" "main" {
   node_role_arn   = var.eks_node_role_arn
 
   # Disable Public subnet for optimum security
-  subnet_ids = var.public_subnet_ids 
-  #subnet_ids = var.private_subnet_ids
+  # subnet_ids = var.public_subnet_ids 
+  subnet_ids = var.private_subnet_ids
 
   instance_types = var.node_instance_types
   capacity_type  = var.capacity_type
