@@ -65,7 +65,7 @@ jobs:
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
           helm upgrade --install nginx \
-            ./helm/nginx \
+            ./helm/app13 \
             --namespace dev \
             --create-namespace \
             --set image.repository=$ACCOUNT_ID.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }} \
