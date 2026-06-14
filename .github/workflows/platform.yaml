@@ -49,14 +49,6 @@ jobs:
             --create-namespace \
             -f helm/ingress-nginx/values.yaml
 
-      - name: Install Cert Manager
-        run: |
-          helm upgrade --install cert-manager \
-            jetstack/cert-manager \
-            --namespace cert-manager \
-            --create-namespace \
-            -f helm/cert-manager/values.yaml
-
       - name: Create Monitoring Namespace
         run: |
           kubectl create namespace monitoring \
@@ -77,6 +69,20 @@ jobs:
             --namespace monitoring \
             --create-namespace \
             -f helm/prometheus/values.yaml
+
+      - name: Wait For ServiceMonitor CRD
+        run: |
+          kubectl wait --for=condition=Established \
+            crd/servicemonitors.monitoring.coreos.com \
+            --timeout=300s
+
+      - name: Install Cert Manager
+        run: |
+          helm upgrade --install cert-manager \
+            jetstack/cert-manager \
+            --namespace cert-manager \
+            --create-namespace \
+            -f helm/cert-manager/values.yaml
 
       - name: Verify Platform Components
         run: |
