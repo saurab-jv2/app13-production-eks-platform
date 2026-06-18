@@ -1,11 +1,10 @@
 name: CD
 
 on:
-  workflow_run:
-    workflows:
-      - CI
-    types:
-      - completed
+  push:
+    branches:
+      - develop
+      - main
 
 permissions:
   id-token: write
@@ -13,9 +12,7 @@ permissions:
 
 jobs:
   deploy-dev:
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_branch == 'develop'
+    if: github.ref == 'refs/heads/develop'
 
     runs-on: ubuntu-latest
     environment: dev
@@ -36,6 +33,9 @@ jobs:
             --region ${{ vars.AWS_REGION }} \
             --name ${{ vars.EKS_CLUSTER_NAME }}
 
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
       - name: Deploy Helm Chart
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -46,12 +46,15 @@ jobs:
             --create-namespace \
             -f helm/app13/values-dev.yaml \
             --set image.repository=$ACCOUNT_ID.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }} \
-            --set image.tag=${{ github.event.workflow_run.head_sha }}
+            --set image.tag=${{ github.sha }}
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/nginx -n dev --timeout=300s
+          kubectl get pods -n dev
 
   deploy-prod:
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_branch == 'main'
+    if: github.ref == 'refs/heads/main'
 
     runs-on: ubuntu-latest
     environment: prod
@@ -72,6 +75,9 @@ jobs:
             --region ${{ vars.AWS_REGION }} \
             --name ${{ vars.EKS_CLUSTER_NAME }}
 
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
       - name: Deploy Helm Chart
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -82,4 +88,9 @@ jobs:
             --create-namespace \
             -f helm/app13/values-prod.yaml \
             --set image.repository=$ACCOUNT_ID.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }} \
-            --set image.tag=${{ github.event.workflow_run.head_sha }}
+            --set image.tag=${{ github.sha }}
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/nginx -n prod --timeout=300s
+          kubectl get pods -n prod
