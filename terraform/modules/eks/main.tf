@@ -66,3 +66,15 @@ resource "aws_eks_node_group" "main" {
     }
   )
 }
+
+resource "aws_eks_addon" "metrics_server" {
+  cluster_name = aws_eks_cluster.main.name
+  addon_name   = "metrics-server"
+
+  depends_on = [
+    aws_eks_cluster.main,
+    aws_eks_node_group.main
+  ]
+
+  tags = var.common_tags
+}
