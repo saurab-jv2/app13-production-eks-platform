@@ -1,0 +1,44 @@
+namespace: dev
+
+replicaCount: 2
+
+image:
+  repository: ""
+  tag: ""
+
+containerPort: 80
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
+
+service:
+  port: 80
+  targetPort: 80
+  type: ClusterIP
+
+ingress:
+  enabled: true
+
+  host: ""
+
+  path: /
+
+  tls:
+    enabled: false
+    secretName: nginx-tls
+
+  clusterIssuer: letsencrypt-prod
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+serviceAccount:
+  name: app13-sa
