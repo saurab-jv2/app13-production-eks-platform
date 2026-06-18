@@ -2,6 +2,15 @@ name: Platform Deployment
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Target Environment
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - prod
 
 permissions:
   id-token: write
@@ -10,6 +19,7 @@ permissions:
 jobs:
   deploy-platform:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
 
     steps:
       - name: Checkout Repository
@@ -72,7 +82,8 @@ jobs:
 
       - name: Wait For ServiceMonitor CRD
         run: |
-          kubectl wait --for=condition=Established \
+          kubectl wait \
+            --for=condition=Established \
             crd/servicemonitors.monitoring.coreos.com \
             --timeout=300s
 
@@ -86,5 +97,7 @@ jobs:
 
       - name: Verify Platform Components
         run: |
+          kubectl get nodes
           kubectl get ns
+          kubectl get pods -A
           helm list -A

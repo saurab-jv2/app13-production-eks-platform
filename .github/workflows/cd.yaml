@@ -1,58 +1,34 @@
 name: CD
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  deploy:
+  deploy-dev:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'develop'
+
     runs-on: ubuntu-latest
+    environment: dev
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Debug variables
-        run: |
-          echo "Region: ${{ vars.AWS_REGION }}"
-          echo "Role length: $(echo '${{ secrets.AWS_ROLE_ARN }}' | wc -c)"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Login to ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build Docker Image
-        run: |
-          docker build \
-            -t ${{ vars.ECR_REPOSITORY }}:${{ github.sha }} \
-            -f app/nginx/Dockerfile \
-            app/nginx
-
-      - name: Tag Image
-        run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-
-          docker tag \
-            ${{ vars.ECR_REPOSITORY }}:${{ github.sha }} \
-            $ACCOUNT_ID.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
-
-      - name: Push Image
-        run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-
-          docker push \
-            $ACCOUNT_ID.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
 
       - name: Configure kubectl
         run: |
@@ -68,5 +44,42 @@ jobs:
             ./helm/app13 \
             --namespace dev \
             --create-namespace \
+            -f helm/app13/values-dev.yaml \
             --set image.repository=$ACCOUNT_ID.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }} \
-            --set image.tag=${{ github.sha }}
+            --set image.tag=${{ github.event.workflow_run.head_sha }}
+
+  deploy-prod:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ vars.AWS_REGION }} \
+            --name ${{ vars.EKS_CLUSTER_NAME }}
+
+      - name: Deploy Helm Chart
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+          helm upgrade --install nginx \
+            ./helm/app13 \
+            --namespace prod \
+            --create-namespace \
+            -f helm/app13/values-prod.yaml \
+            --set image.repository=$ACCOUNT_ID.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }} \
+            --set image.tag=${{ github.event.workflow_run.head_sha }}
