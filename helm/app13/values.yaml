@@ -39,3 +39,6 @@ autoscaling:
   minReplicas: 2
   maxReplicas: 5
   targetCPUUtilizationPercentage: 70
+
+serviceAccount:
+  name: app13-sa
