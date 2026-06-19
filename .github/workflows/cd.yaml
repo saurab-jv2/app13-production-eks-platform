@@ -27,6 +27,16 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Set deployment variables
+        run: |
+          if [ "${{ github.event.workflow_run.head_branch }}" = "main" ]; then
+            echo "NAMESPACE=prod" >> $GITHUB_ENV
+            echo "VALUES_FILE=helm/app13/values-prod.yaml" >> $GITHUB_ENV
+          else
+            echo "NAMESPACE=dev" >> $GITHUB_ENV
+            echo "VALUES_FILE=helm/app13/values-dev.yaml" >> $GITHUB_ENV
+          fi
+
       - name: Configure kubectl
         run: |
           aws eks update-kubeconfig \
@@ -42,9 +52,9 @@ jobs:
 
           helm upgrade --install nginx \
             ./helm/app13 \
-            --namespace dev \
+            --namespace $NAMESPACE \
             --create-namespace \
-            -f helm/app13/values-dev.yaml \
+            -f $VALUES_FILE \
             --set image.repository=$ACCOUNT_ID.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }} \
             --set image.tag=${{ github.sha }}
 
