@@ -229,13 +229,27 @@ screenshots/
 
 Examples include:
 
-* GitHub Actions workflows
-* Terraform deployment
-* EKS cluster
-* Kubernetes workloads
-* Prometheus
-* Grafana
-* Application deployment
+## Deployment Evidence
+
+### Application
+
+![Application](screenshots/application/application-running.png)
+
+### Grafana Dashboard
+
+![Grafana](screenshots/monitoring/grafana-dashboard.png)
+
+### Prometheus Targets
+
+![Prometheus](screenshots/monitoring/prometheus-targets.png)
+
+### CI Pipeline
+
+![CI](screenshots/github-actions/ci-success.png)
+
+### CD Pipeline
+
+![CD](screenshots/github-actions/cd-success.png)
 
 ---
 
