@@ -27,16 +27,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Set deployment variables
-        run: |
-          if [ "${{ github.event.workflow_run.head_branch }}" = "main" ]; then
-            echo "NAMESPACE=prod" >> $GITHUB_ENV
-            echo "VALUES_FILE=helm/app13/values-prod.yaml" >> $GITHUB_ENV
-          else
-            echo "NAMESPACE=dev" >> $GITHUB_ENV
-            echo "VALUES_FILE=helm/app13/values-dev.yaml" >> $GITHUB_ENV
-          fi
-
       - name: Configure kubectl
         run: |
           aws eks update-kubeconfig \
@@ -52,9 +42,9 @@ jobs:
 
           helm upgrade --install nginx \
             ./helm/app13 \
-            --namespace $NAMESPACE \
+            --namespace dev \
             --create-namespace \
-            -f $VALUES_FILE \
+            -f helm/app13/values-dev.yaml \
             --set image.repository=$ACCOUNT_ID.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }} \
             --set image.tag=${{ github.sha }}
 
@@ -62,6 +52,8 @@ jobs:
         run: |
           kubectl rollout status deployment/nginx -n dev --timeout=300s
           kubectl get pods -n dev
+          kubectl get svc -n dev
+          kubectl get ingress -n dev
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
@@ -104,3 +96,5 @@ jobs:
         run: |
           kubectl rollout status deployment/nginx -n prod --timeout=300s
           kubectl get pods -n prod
+          kubectl get svc -n prod
+          kubectl get ingress -n prod
